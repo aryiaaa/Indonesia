@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kata Random</title>
+<link rel="stylesheet" href="style22.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Kata Random</h1>
+    <div id="randomWord" class="random-word">Klik tombol untuk memunculkan kata.</div>
+    <button id="changeWordBtn" class="change-word-btn" onclick="changeWord()">Ganti Kata</button>
+    <ul id="wordList" class="word-list"></ul>
+  </div>
+
+  <script>
+    var words = ["Jam", "Jam brapa", "Brapa jam", "Arloji", "Mengukur", "Antara", "Kadang-kadang", "Tiap bulan", "Guru", "Belajar", "Tenaga", "Kuat", "Serangga", "Kuil", "Duluan", "Mengerti", "Menit", "Diri sendiri", "Perasaan", "Setengah", "Semangat", "Jalan kaki", "Jelek", "Sedikit", "Berhenti", "Menghentikan", "Hati", "Senang", "1.30", "Satu setengah tahun", "Setengah hari", "Setengah tahun", "Tahun", "Selesai", "Musim dingin", "Benang", "Kerja", "Bulan hari Senin", "Bulan ini", "Bulan lalu", "Bulan depan", "Jepang", "Panas", "Akhir bulan", "Tanggal lahir", "Api", "Hari Selasa", "Gunung berapi", "Kebakaran", "Rumah sakit", "Sakit", "Tolong", "Air", "Rabu", "Saluran air", "Jalan", "Leher", "Renang", "Tokyo", "Timur", "Kyoto", "Minggu depan", "Pohon", "Hari Kamis", "Istirahat", "Pulang", "Bawah", "Emas", "Uang", "Hari Jumat", "Biaya", "Masakan", "Orang kaya", "Membawa", "Beras", "Tangan", "Malam", "Sawah", "Cara/orang", "Sore", "Tanah", "Hari Sabtu", "Oleh-oleh", "Lahan", "Peta", "Ibu orang lain", "Ayah orang lain", "Ibu"];
+
+    var usedWords = [];
+    var shuffledWords = [];
+
+    function shuffle(array) {
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function changeWord() {
+      if (shuffledWords.length === 0) {
+        shuffledWords = [...words];
+        shuffle(shuffledWords);
+      }
+
+      var randomWord = shuffledWords.pop();
+      var randomNumber = usedWords.length + 1;
+      document.getElementById("randomWord").innerHTML = randomNumber + ". " + randomWord;
+      usedWords.push(randomWord);
+      updateWordList();
+    }
+
+    function updateWordList() {
+      var listElement = document.getElementById("wordList");
+      listElement.innerHTML = "";
+      usedWords.forEach(function(word, index) {
+        var listItem = document.createElement("li");
+        listItem.textContent = (index + 1) + ". " + word;
+        listElement.appendChild(listItem);
+      });
+    }
+  </script>
+</body>
+</html>

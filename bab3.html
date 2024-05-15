@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .answer-list {
+            font-size: 20px;
+            margin-top: 10px;
+            list-style-type: none;
+            padding: 0;
+            overflow-y: scroll; /* Menambahkan overflow-y: scroll untuk memungkinkan scrolling */
+            max-height: 300px; /* Mengatur ketinggian maksimum untuk daftar jawaban */
+        }
+        .answer-list li {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .answer-list li.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .marked {
+            color: red;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="header">
+                    <img src="quiz_logo.png" alt="Quiz Logo">
+                    <h2>BAB 7, 8, 9</h2>
+                </div>
+                <div class="question mb-4" id="question"></div>
+                <button id="showAnswerBtn" class="btn btn-primary mb-3" onclick="showAnswer()">Lihat Jawaban</button>
+                <button id="markQuestionBtn" class="btn btn-danger mb-3" onclick="markQuestion()">Tandai Soal</button>
+                <ul class="answer-list" id="answerList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionElement = document.getElementById('question');
+        const answerListElement = document.getElementById('answerList');
+        const showAnswerBtn = document.getElementById('showAnswerBtn');
+        const markQuestionBtn = document.getElementById('markQuestionBtn');
+
+        let currentQuestionIndex = 0;
+        let marked = false;
+
+        // Array pertanyaan dan jawaban yang sudah dipasangkan
+      const questionsAndAnswers = [
+      { question: 'mengerti', answer: 'わかります' },
+      { question: 'ada, mempunyai', answer: 'あります' },
+      { question: 'suka, gemar', answer: 'すき' },
+      { question: 'tidak suka', answer: 'きらい' },
+      { question: 'pandai, pintar', answer: 'じょうず' },
+      { question: 'tidak pandai/tidak pintar', answer: 'へた' },
+      { question: 'minuman', answer: 'のみもの' },
+      { question: 'masakan', answer: 'りょうり' },
+      { question: 'olahraga', answer: 'スポーツ' },
+      { question: 'baseball', answer: 'やきゅう' },
+      { question: 'dansa', answer: 'ダンス' },
+        { question: 'memotong/menggunting', answer: 'きります' },
+        { question: 'mengirim', answer: 'おくります' },
+        { question: 'memberikan', answer: 'あげます' },
+        { question: 'mendapatkan/menerima', answer: 'もらいます' },
+        { question: 'meminjamkan/menyewakan', answer: 'かします' },
+        { question: 'meminjam/menyewa', answer: 'かります' },
+        { question: 'mengajar', answer: 'おしえます' },
+        { question: 'belajar', answer: 'ならいます' },
+        { question: 'menelepon', answer: 'でんわをかけます' },
+        { question: 'Tangan', answer: 'て' },
+        { question: 'sumpit', answer: 'はし' },
+        { question: 'sendok', answer: 'スプーン' },
+        { question: 'pisau', answer: 'ナイフ' },
+        { question: 'garpu', answer: 'フォーク' },
+        { question: 'gunting', answer: 'はさみ' },
+        { question: 'komputer PC', answer: 'パソコン' },
+        { question: 'HP', answer: 'ケータイ' },
+        { question: 'email', answer: 'メール' },
+        { question: 'kartu tahun baru', answer: 'ねんがじょう' },
+        { question: 'pelubang kertas', answer: 'パンチ' },
+        { question: 'selotip', answer: 'セロテープ' },
+        { question: 'penghapus karet', answer: 'けしゴム' },
+        { question: 'staplar', answer: 'ホッチキス' },
+        { question: 'kertas', answer: 'かみ' },
+        { question: 'bunga', answer: 'はな' },
+        { question: 'kemeja', answer: 'シャツ' },
+        { question: 'kado/hadiah', answer: 'プレゼント' },
+        { question: 'barang', answer: 'にもつ' },
+        { question: 'uang', answer: 'おかね' },
+        { question: 'karcis', answer: 'きっぷ' },
+        { question: 'Natal', answer: 'クリスマス' },
+        { question: 'bapak/ayah orang lain', answer: 'おとうさん' },
+        { question: 'ibu', answer: 'はは' },
+        { question: 'ayah', answer: 'ちち' },
+        { question: 'ibu/ibu orang lain', answer: 'おかあさん' },
+        { question: 'sudah', answer: 'もう' },
+        { question: 'belum', answer: 'まだ' },
+        { question: 'mulai dari sekarang', answer: 'これから' },
+        { question: '~bagus ya/~indah ya', answer: 'すてきですね' },
+        { question: 'selamat datang', answer: 'いらっしゃい' },
+        { question: 'silahkan masuk', answer: 'どうぞおあがりください' },
+        { question: 'permisi', answer: 'しつれいします' },
+        { question: 'bagaimana(~)?', answer: 'いかがですか' },
+        { question: 'spanyol', answer: 'スペイン' },
+        { question: 'selamat makan', answer: 'いただきます' },
+        { question: 'terimakasih atas hidangannya', answer: 'ごちそうさまでした' },
+        { question: 'mengerti', answer: 'わかります, ' },
+        { question: 'ada/mempunyai', answer: 'あります, ' },
+        { question: 'suka/gemar', answer: 'すき, ' },
+        { question: 'tidak suka', answer: 'きらい, ' },
+        { question: 'pandai/pintar', answer: 'じょうず, ' },
+        { question: 'tidak pandai', answer: 'へた, ' },
+        { question: 'minuman', answer: 'のみもの, ' },
+        { question: 'masakan', answer: 'りょうり, ' },
+        { question: 'olahraga', answer: 'スポーツ, ' },
+        { question: 'baseball', answer: 'やきゅう, ' },
+        { question: 'dansa', answer: 'ダンス, ' },
+        { question: 'tamasya', answer: 'りょこう, ' },
+        { question: 'musik', answer: 'おんがく, ' },
+        { question: 'lagu', answer: 'うた, ' },
+        { question: 'klasik', answer: 'クラシック, ' },
+        { question: 'jaz', answer: 'ジャズ, ' },
+        { question: 'konser', answer: 'コンサート, ' },
+        { question: 'karaoke', answer: 'カラオケ, ' },
+        { question: 'kabuki', answer: 'かぶき' },
+        { question: 'gambar', answer: 'え, ' },
+        { question: 'huruf', answer: 'じ, ' },
+        { question: 'kanji', answer: 'かんじ, ' },
+        { question: 'hiragana', answer: 'ひらがな, ' },
+        { question: 'katakana', answer: 'カタカナ, ' },
+        { question: 'huruf latin', answer: 'ろーまじ, ' },
+        { question: 'uang kecil', answer: 'こまかい おかね, ' },
+        { question: 'tiket', answer: 'ちけっと, ' },
+        { question: 'jam/waktu', answer: 'じかん, ' },
+        { question: 'urusan', answer: 'ようじ, ' },
+        { question: 'janji', answer: 'やくそく, ' },
+        { question: 'kerja paruh waktu', answer: 'あるばいと, ' },
+        { question: 'suami(oranglain)', answer: 'ごしゅじん, ' },
+        { question: 'suami', answer: 'おっと/しゅじん, ' },
+        { question: 'istri (oranglain)', answer: 'おくさん, ' },
+        { question: 'istri', answer: 'つま/かない, ' },
+        { question: 'anak', answer: 'こども, ' },
+        { question: 'dengan baik', answer: 'よく, ' },
+        { question: 'kira kira', answer: 'だいたい, ' },
+        { question: 'banyak', answer: 'たくさん, ' },
+        { question: 'sedikit', answer: 'すこし, ' },
+        { question: 'samasekali', answer: 'ぜんぜん, ' },
+        { question: 'dengan cepat', answer: 'はやく, ' },
+        { question: 'karena~/sebab~', answer: '～から, ' },
+        { question: 'kenapa', answer: 'どうして, ' },
+        { question: 'tolong pinjamkan', answer: 'かしてください, ' },
+        { question: 'boleh', answer: 'いいですよ, ' },
+        { question: 'sayang sekali', answer: 'ざんねんです, ' },
+        { question: 'ah oh', answer: 'ああ, ' },
+        { question: 'bagaimana kalau bersama-sama', answer: 'いっしょに いかがですか, ' },
+        { question: 'maaf ya, saya tidak bisa', answer: '～は ちょっと, ' },
+        { question: 'tidak bisa ya?/tidak boleh ya?', answer: 'だめですか, ' },
+        { question: 'maaf lain kali saja', answer: 'また こんど おねがいします, ' },
+        { question: 'baru', answer: 'あたらしい, ' },
+        { question: 'lama,tua', answer: 'ふるい, ' },
+        { question: 'baik,bagus', answer: 'いい, ' },
+        { question: 'buruk,jelek', answer: 'わるい, ' },
+        { question: 'panas', answer: 'あつい, ' },
+        { question: 'dingin(tentang udara)', answer: 'さむい, ' },
+        { question: 'dingin(tentang benda)', answer: 'つめたい, ' },
+        { question: 'sulit,susah', answer: 'むずかしい, ' },
+        { question: 'mudah,gampang', answer: 'やさい, ' },
+        { question: 'mahal,tinggi', answer: 'たかい, ' },
+        { question: 'murah', answer: 'やすい, ' },
+        { question: 'rendah', answer: 'ひくい, ' },
+        { question: 'menarik', answer: 'おもしろい, ' },
+        { question: 'enak', answer: 'おいしい, ' },
+        { question: 'sibuk', answer: 'いそがしい, ' },
+        { question: 'senang', answer: 'たのしい' },
+        { question: 'tampan,gagah,ganteng', answer: 'ハンサム, ' },
+        { question: 'cantik,bersih', answer: 'きれい, ' },
+        { question: 'sunyi,tenang', answer: 'しずか, ' },
+        { question: 'ramai', answer: 'にぎやか, ' },
+        { question: 'terkenal', answer: 'ゆうめい, ' },
+        { question: 'baik hati(tidak digunakan keluarga sendiri)', answer: 'しんせつ, ' },
+        { question: 'sehat walafiat', answer: 'げんき, ' },
+        { question: 'senggang', answer: 'ひま, ' },
+        { question: 'praktis', answer: 'べんり, ' },
+        { question: 'bagus', answer: 'すてき, ' },
+        { question: 'besar', answer: 'おおきい, ' },
+        { question: 'kecil', answer: 'ちいさい' },
+        { question: 'putih', answer: 'しろい' },
+        { question: 'hitam', answer: 'くろい' },
+        { question: 'merah', answer: 'あかい' },
+        { question: 'biru', answer: 'あおい' },
+        { question: 'tempat', answer: 'ところ' },
+        { question: 'asrama', answer: 'りょう' },
+        { question: 'restoran', answer: 'レストラン' },
+        { question: 'kehidupan', answer: 'せいかつ' },
+        { question: 'pekerjaan', answer: 'しごと' },
+        { question: 'bagaimana', answer: 'どう' },
+        { question: 'yang bagaimana~', answer: 'どんな' },
+        { question: 'sangat,~sekali', answer: 'どても' },
+        { question: 'kurang begitu~,tidak begitu', answer: 'あまり' },
+        { question: 'kemudian', answer: 'そして' },
+        { question: '~tetapi~', answer: '～が～' },
+        { question: 'apa kabar?', answer: 'おげんきですか' },
+        { question: 'bagaimana ya?', answer: 'そうですね' },
+        { question: 'mau tambah secangkir lagi?', answer: 'もういっぱい いかがですか' },
+        { question: 'terimakasih ,saya sudah cukup', answer: 'けっこうです' },
+        { question: 'sudah ~[ya]', answer: 'もう ～ です ね' },
+        { question: 'maaf,saya mau pamit dulu', answer: 'そろそろしつれいします' },
+        { question: 'sama sama', answer: 'いいえ' },
+        { question: 'silahkan datang lagi', answer: 'また いらっしゃってください' }
+
+
+
+
+
+      ];
+
+        // Acak pasangan pertanyaan dan jawaban
+        const shuffledQuestionsAndAnswers = shuffle(questionsAndAnswers);
+
+        function shuffle(array) {
+            let currentIndex = array.length,  randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function displayQuestion() {
+            questionElement.textContent = shuffledQuestionsAndAnswers[currentQuestionIndex].question;
+        }
+
+        function displayAnswer() {
+            const answer = shuffledQuestionsAndAnswers[currentQuestionIndex].answer;
+            const listItem = document.createElement('li');
+            listItem.textContent = (currentQuestionIndex + 1) + '. ' + answer; // Menambahkan nomor urutan
+            answerListElement.insertBefore(listItem, answerListElement.firstChild); // Memasukkan jawaban di atas yang sudah ada
+            setTimeout(function() {
+                listItem.classList.add('show'); // Menambahkan kelas untuk animasi
+            }, 0); // Menunggu proses rendering selesai sebelum menambahkan kelas animasi
+            if (marked && currentQuestionIndex === 0) { // Tandai jawaban pertama jika tombol "Tandai Soal" ditekan
+                listItem.classList.add('marked');
+            }
+        }
+
+        function showAnswer() {
+            displayAnswer();
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestionsAndAnswers.length) {
+                displayQuestion();
+            } else {
+                showAnswerBtn.disabled = true;  // Menonaktifkan tombol "Lihat Jawaban" setelah semua jawaban ditampilkan
+            }
+        }
+
+        function markQuestion() {
+            marked = true;
+            displayAnswer();   // Tampilkan jawaban yang sesuai
+        }
+
+        // Tampilkan pertanyaan pertama saat halaman dimuat
+        displayQuestion();
+    </script>
+</body>
+</html>
+

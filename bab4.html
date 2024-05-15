@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .answer-list {
+            font-size: 20px;
+            margin-top: 10px;
+            list-style-type: none;
+            padding: 0;
+            overflow-y: scroll; /* Menambahkan overflow-y: scroll untuk memungkinkan scrolling */
+            max-height: 300px; /* Mengatur ketinggian maksimum untuk daftar jawaban */
+        }
+        .answer-list li {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .answer-list li.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .marked {
+            color: red;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="header">
+                    <img src="quiz_logo.png" alt="Quiz Logo">
+                    <h2>BAB 10, 11, 12</h2>
+                </div>
+                <div class="question mb-4" id="question"></div>
+                <button id="showAnswerBtn" class="btn btn-primary mb-3" onclick="showAnswer()">Lihat Jawaban</button>
+                <button id="markQuestionBtn" class="btn btn-danger mb-3" onclick="markQuestion()">Tandai Soal</button>
+                <ul class="answer-list" id="answerList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionElement = document.getElementById('question');
+        const answerListElement = document.getElementById('answerList');
+        const showAnswerBtn = document.getElementById('showAnswerBtn');
+        const markQuestionBtn = document.getElementById('markQuestionBtn');
+
+        let currentQuestionIndex = 0;
+        let marked = false;
+
+        // Array pertanyaan dan jawaban yang sudah dipasangkan
+        const questionsAndAnswers = [
+
+
+
+
+
+
+
+
+{ question: 'Ada, mempunyai', answer: 'います' },
+    { question: 'Ada', answer: 'います' },
+    { question: 'Tidak masuk', answer: 'やすみます' },
+    { question: 'Satu ( barang)', answer: 'ひとつ' },
+    { question: 'Dua', answer: 'ふたつ' },
+    { question: 'Tiga', answer: 'みっつ' },
+    { question: 'Empat', answer: 'よっつ' },
+    { question: 'Lima', answer: 'いつつ' },
+    { question: 'Enam', answer: 'むっつ' },
+    { question: 'Tujuh', answer: 'ななつ' },
+    { question: 'Delapan', answer: 'やっつ' },
+    { question: 'Sembilan', answer: 'ここのつ' },
+    { question: 'Sepuluh', answer: 'とお' },
+    { question: 'Berapa', answer: 'いくつ' },
+    { question: 'Seorang', answer: 'ひとり' },
+    { question: 'Dua orang', answer: 'ふたり' },
+    { question: '-orang', answer: '〜にん' },
+    { question: 'Buah (bilangan untuk menghitung mesin)', answer: '〜だい' },
+    { question: 'Lembar,helai', answer: '〜まい' },
+    { question: '~Kali', answer: '〜かい' },
+    { question: 'Apel', answer: 'りんご' },
+    { question: 'Jeruk', answer: 'みかん' },
+    { question: 'Sandwich', answer: 'サンドイッチ' },
+    { question: 'Kare', answer: 'カレー' },
+    { question: 'Es krim', answer: 'アイスクリーム' },
+    { question: 'Prangko', answer: 'きって' },
+    { question: 'Kartu pos', answer: 'はがき' },
+    { question: 'Amplop', answer: '封筒' },
+    { question: 'Orang tua', answer: 'りょうしん' },
+    { question: 'Saudara,saudari', answer: 'きょうだい' },
+    { question: 'Kakak laki2', answer: 'あに' },
+    { question: 'Kakak laki2 (orang lain)', answer: 'おにいさん' },
+    { question: 'Kakak Perempuan', answer: 'あね' },
+    { question: 'Kakak Perempuan (orang lain)', answer: 'おねえさん' },
+    { question: 'Adik laki2', answer: 'おとうと' },
+    { question: 'Adik laki2 (orang lain)', answer: 'おとうとさん' },
+    { question: 'Adik perempuan', answer: 'いもうと' },
+    { question: 'Adik perempuan (orang lain)', answer: 'いもうとさん' },
+    { question: 'Luar negeri', answer: 'がいこく' },
+    { question: 'Pelajar asing', answer: 'りゅうがくせい' },
+    { question: 'Kelas', answer: 'クラス' },
+    { question: '~jam', answer: '〜じかん' },
+    { question: '~minggu', answer: '〜しゅうかん' },
+    { question: '~bulan', answer: '〜かげつ' },
+    { question: '~tahun', answer: '〜ねん' },
+    { question: 'Kira kira', answer: 'ぐらい' },
+    { question: 'Berapa lama', answer: 'どのくらい' },
+    { question: 'Semuanya', answer: 'ぜんぶで' },
+    { question: 'Semua', answer: 'みんな' },
+    { question: 'Hanya/saja', answer: 'だけ' },
+    { question: 'Baik', answer: 'かしこまりました' },
+    { question: 'Cuacanya bagus ya', answer: 'いいてんきですね' },
+    { question: 'Mau keluar?', answer: 'おでかけですか' },
+    { question: 'Ke~sebentar', answer: 'ちょっと〜まで' },
+    { question: 'Hati hati', answer: 'いってらっしゃい' },
+    { question: 'Saya berangkat', answer: 'いってきます' },
+    { question: 'Pos laut', answer: 'ふなびん' },
+    { question: 'Pos udara', answer: 'エアメール' },
+    { question: 'Tolong', answer: 'おねがいします' },
+    { question: 'Australia', answer: 'オーストラリア' },
+          { question: 'ada(benda mati)', answer: 'あります' },
+            { question: 'ada(mahluk hidup)', answer: 'います' },
+            { question: 'berbagai', answer: 'いろいろ' },
+            { question: 'orang laki laki', answer: 'おとこのひと' },
+            // Daftar pertanyaan dan jawaban dilanjutkan di sini...
+            {question: 'orang perempuan', answer: 'おんなのひと' },
+            { question: 'anak laki laki', answer: 'おとこのこ' },
+            { question: 'anak perempuan', answer: 'おんなのこ' },
+            { question: 'anjing', answer: 'いぬ' },
+            { question: 'kucing', answer: 'ねこ' },
+            { question: 'panda', answer: 'パンダ' },
+            { question: 'gajah', answer: 'ぞう' },
+            { question: 'pohon', answer: 'き' },
+            { question: 'barang', answer: 'もの' },
+            { question: 'baterai', answer: 'でんち' },
+            { question: 'kotak', answer: 'はこ' },
+            { question: 'tombol,sakelar', answer: 'スイッチ' },
+            { question: 'kulkas,lemari es', answer: 'れいぞうこ' },
+            { question: 'meja makan', answer: 'テーブル' },
+            { question: 'tempat tidur', answer: 'ベッド' },
+            { question: 'lemari', answer: 'たな' },
+            { question: 'pintu', answer: 'ドア' },
+            { question: 'jendela', answer: 'まど' },
+            { question: 'kotak surat', answer: 'ポスト' },
+            { question: 'gedung', answer: 'ビル' },
+            { question: 'toko 24 jam', answer: 'コンビニ' },
+            { question: 'taman', answer: 'こうえん' },
+            { question: 'coffe shop', answer: 'きっさてん' },
+            { question: 'toko ~', answer: '～や' },
+            { question: 'tempat naik', answer: 'のりば' },
+            { question: 'prefektur', answer: 'けん' },
+          { question: 'atas', answer: 'うえ' },
+          { question: 'bawah', answer: 'した' },
+          { question: 'depan,muka', answer: 'まえ' },
+          { question: 'belakang', answer: 'うしろ' },
+          { question: 'kanan', answer: 'みぎ' },
+          { question: 'kiri', answer: 'ひだり' },
+          { question: 'dalam', answer: 'なか' },
+          { question: 'luar', answer: 'そと' },
+          { question: 'sebelah', answer: 'となり' },
+          { question: 'dekat', answer: 'ちかく' },
+          { question: 'antara', answer: 'あいだ' },
+          { question: '~dan~(dan lain lain)', answer: '~や~' },
+          { question: 'terimakasih (bnyk)', answer: '(どうも) すみません' },
+          { question: 'kecap ikan', answer: 'ナンプラ-' },
+          { question: 'tempat/bagian penjualan', answer: 'コ-ナ-' },
+          { question: 'paling bawah', answer: 'いちばんした' },
+          { question: 'tokyo disneyland', answer: 'とうきょう ディズニーランド' },
+
+          { question: 'mudah,gampang', answer: 'かんたん' },
+          { question: 'dekat', answer: 'ちかい' },
+          { question: 'jauh', answer: 'とおい' },
+          { question: 'cepat', answer: 'はやい' },
+          { question: 'lambat', answer: 'おそい' },
+          { question: 'banyak[orang]', answer: 'おおい（ひとが～）' },
+          { question: 'sedikit[orang]', answer: 'すくない' },
+          { question: 'hangat', answer: 'あたたかい' },
+          { question: 'sejuk', answer: 'すずしい' },
+          { question: 'manis', answer: 'あまい' },
+          { question: 'pedas', answer: 'からい' },
+          { question: 'berat', answer: 'おもい' },
+          { question: 'ringan', answer: 'かるい' },
+          { question: 'lebih baik', answer: 'いい' },
+          { question: 'musim', answer: 'きせつ' },
+          { question: 'musim semi', answer: 'はる' },
+          { question: 'musim panas', answer: 'なつ' },
+          { question: 'musim gugur', answer: 'あき' },
+          { question: 'musim dingin', answer: 'ふゆ' },
+          { question: 'cuaca', answer: 'てんき' },
+          { question: 'hujan', answer: 'あめ' },
+          { question: 'salju', answer: 'ゆき' },
+          { question: 'mendung', answer: 'くもり' },
+          { question: 'hotel', answer: 'ホテル' },
+          { question: 'bandara', answer: 'くうこう' },
+          { question: 'laut', answer: 'うみ' },
+          { question: 'dunia', answer: 'せかい' },
+          { question: 'pesta', answer: 'パーティー' },
+          { question: 'perayaan', answer: 'まつり' },
+            { question: 'sukiyaki', answer: 'すきやき' },
+            { question: 'sashimi', answer: 'さしみ' },
+            { question: 'sushi', answer: 'すし' },
+            { question: 'tempura', answer: 'てんぷら' },
+            { question: 'daging babi', answer: 'ぶたにく' },
+            { question: 'daging ayam', answer: 'とりにく' },
+            { question: 'daging sapi', answer: 'ぎゅうにく' },
+            { question: 'lemon', answer: 'レモン' },
+            { question: 'seni merangkai bunga', answer: 'いけばな' },
+            { question: 'maple', answer: 'もみじ' },
+            { question: 'yang mana', answer: 'どちら' },
+            { question: 'dua duanya/yang mana juga', answer: 'どちらも' },
+            { question: 'paling', answer: 'いちばん' },
+            { question: 'jauh lebih', answer: 'ずっと' },
+            { question: 'untuk pertama kali', answer: 'はじめて' },
+            { question: 'saya kembali', answer: 'ただいま' },
+            { question: 'sudah pulang ya', answer: 'おかえりなさい' },
+            { question: 'wah,banyak orang', answer: 'わあ、すごいひとですね' },
+            { question: 'lelah', answer: 'つかれました' },
+            { question: 'perayaan gion', answer: 'ぎおんまつり' },
+            { question: 'hongkong', answer: 'ほんこん' },
+            { question: 'singapura', answer: 'シンガポール' }
+        ];
+
+        // Acak pasangan pertanyaan dan jawaban
+        const shuffledQuestionsAndAnswers = shuffle(questionsAndAnswers);
+
+        function shuffle(array) {
+            let currentIndex = array.length,  randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function displayQuestion() {
+            questionElement.textContent = shuffledQuestionsAndAnswers[currentQuestionIndex].question;
+        }
+
+        function displayAnswer() {
+            const answer = shuffledQuestionsAndAnswers[currentQuestionIndex].answer;
+            const listItem = document.createElement('li');
+            listItem.textContent = (currentQuestionIndex + 1) + '. ' + answer; // Menambahkan nomor urutan
+            answerListElement.insertBefore(listItem, answerListElement.firstChild); // Memasukkan jawaban di atas yang sudah ada
+            setTimeout(function() {
+                listItem.classList.add('show'); // Menambahkan kelas untuk animasi
+            }, 0); // Menunggu proses rendering selesai sebelum menambahkan kelas animasi
+            if (marked && currentQuestionIndex === 0) { // Tandai jawaban pertama jika tombol "Tandai Soal" ditekan
+                listItem.classList.add('marked');
+            }
+        }
+
+        function showAnswer() {
+            displayAnswer();
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestionsAndAnswers.length) {
+                displayQuestion();
+            } else {
+                showAnswerBtn.disabled = true;  // Menonaktifkan tombol "Lihat Jawaban" setelah semua jawaban ditampilkan
+            }
+        }
+
+        function markQuestion() {
+            marked = true;
+            displayAnswer();   // Tampilkan jawaban yang sesuai
+        }
+
+        // Tampilkan pertanyaan pertama saat halaman dimuat
+        displayQuestion();
+    </script>
+</body>
+</html>
+

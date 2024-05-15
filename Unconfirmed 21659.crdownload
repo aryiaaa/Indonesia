@@ -1,0 +1,61 @@
+const questionElement = document.getElementById('question');
+const answerListElement = document.getElementById('answerList');
+const showAnswerBtn = document.getElementById('showAnswerBtn');
+const markQuestionBtn = document.getElementById('markQuestionBtn');
+
+let currentQuestionIndex = 0;
+let marked = false;
+
+// Array pertanyaan dan jawaban yang sudah dipasangkan
+const questionsAndAnswers = [
+    { question: 'Pertanyaan 1', answer: 'Jawaban 1' },
+    { question: 'Pertanyaan 2', answer: 'Jawaban 2' },
+    { question: 'Pertanyaan 3', answer: 'Jawaban 3' },
+    { question: 'Pertanyaan 4', answer: 'Jawaban 4' }
+];
+
+// Acak pasangan pertanyaan dan jawaban
+const shuffledQuestionsAndAnswers = shuffle(questionsAndAnswers);
+
+function shuffle(array) {
+    let currentIndex = array.length,  randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function displayQuestion() {
+    questionElement.textContent = shuffledQuestionsAndAnswers[currentQuestionIndex].question;
+}
+
+function displayAnswer() {
+    const answer = shuffledQuestionsAndAnswers[currentQuestionIndex].answer;
+    const listItem = document.createElement('li');
+    listItem.textContent = (currentQuestionIndex + 1) + '. ' + answer; // Menambahkan nomor urutan
+    listItem.classList.add('show'); // Menambahkan kelas untuk animasi
+    if (marked && currentQuestionIndex === 0) { // Tandai jawaban pertama jika tombol "Tandai Soal" ditekan
+        listItem.classList.add('marked');
+    }
+    answerListElement.appendChild(listItem);
+}
+
+function showAnswer() {
+    displayAnswer();
+    currentQuestionIndex++;
+    if (currentQuestionIndex < shuffledQuestionsAndAnswers.length) {
+        displayQuestion();
+    } else {
+        showAnswerBtn.disabled = true;  // Menonaktifkan tombol "Lihat Jawaban" setelah semua jawaban ditampilkan
+    }
+}
+
+function markQuestion() {
+    marked = true;
+    displayAnswer();   // Tampilkan jawaban yang sesuai
+}
+
+// Tampilkan pertanyaan pertama saat halaman dimuat
+displayQuestion();

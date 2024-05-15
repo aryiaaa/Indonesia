@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .answer-list {
+            font-size: 20px;
+            margin-top: 10px;
+            list-style-type: none;
+            padding: 0;
+            overflow-y: scroll; /* Menambahkan overflow-y: scroll untuk memungkinkan scrolling */
+            max-height: 300px; /* Mengatur ketinggian maksimum untuk daftar jawaban */
+        }
+        .answer-list li {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .answer-list li.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .marked {
+            color: red;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="header">
+                    <img src="quiz_logo.png" alt="Quiz Logo">
+                    <h2>BAB 4, 5, 6</h2>
+                </div>
+                <div class="question mb-4" id="question"></div>
+                <button id="showAnswerBtn" class="btn btn-primary mb-3" onclick="showAnswer()">Lihat Jawaban</button>
+                <button id="markQuestionBtn" class="btn btn-danger mb-3" onclick="markQuestion()">Tandai Soal</button>
+                <ul class="answer-list" id="answerList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionElement = document.getElementById('question');
+        const answerListElement = document.getElementById('answerList');
+        const showAnswerBtn = document.getElementById('showAnswerBtn');
+        const markQuestionBtn = document.getElementById('markQuestionBtn');
+
+        let currentQuestionIndex = 0;
+        let marked = false;
+
+        // Array pertanyaan dan jawaban yang sudah dipasangkan
+        const questionsAndAnswers = [
+          { question: 'bangun', answer: 'おきます' },
+          { question: 'tidur', answer: 'ねます' },
+          { question: 'bekerja', answer: 'はたらきます' },
+          { question: 'beristirahat', answer: 'やすみます' },
+          { question: 'belajar', answer: 'べんきょうします' },
+          { question: 'selesai', answer: 'おわります' },
+          { question: 'toserba', answer: 'デパート' },
+          { question: 'bank', answer: 'ぎんこう' },
+          { question: 'kantor pos', answer: 'ゆうびんきょく' },
+          { question: 'perpustakaan', answer: 'としょかん' },
+          { question: 'gedung kesenian', answer: 'げきじょう' },
+          { question: 'sekarang', answer: 'いま' },
+          { question: 'jam/pukul', answer: 'じ' },
+          { question: 'menit', answer: 'ふん' },
+          { question: 'setengah', answer: 'はん' },
+          { question: 'jam brapa', answer: 'なんじ' },
+          { question: 'brapa menit', answer: 'なんぷん' },
+          { question: 'a.m.', answer: 'ごぜん' },
+          { question: 'p.m.', answer: 'ごご' },
+          { question: 'pagi', answer: 'あさ' },
+          { question: 'siang', answer: 'ひる' },
+          { question: 'malam', answer: 'よる' },
+          { question: 'dua hari lalu', answer: 'おととい' },
+          { question: 'kemarin', answer: 'きのう' },
+          { question: 'hari ini', answer: 'きょう' },
+          { question: 'besok', answer: 'あした' },
+          { question: 'lusa', answer: 'あさって' },
+          { question: 'pagi ini', answer: 'けさ' },
+          { question: 'malam ini', answer: 'こんばん' },
+          { question: 'istirahat/cuti/libur', answer: 'やすみ' },
+          { question: 'istirahat siang', answer: 'ひるやすみ' },
+          { question: 'ujian', answer: 'しけん' },
+          { question: 'rapat', answer: 'かいぎ' },
+          { question: 'film', answer: 'えいが' },
+          { question: 'setiap pagi', answer: 'まいあさ' },
+          { question: 'setiap malam', answer: 'まいばん' },
+          { question: 'setiap hari', answer: 'まいにち' },
+          { question: 'hari Senin', answer: 'げつようび' },
+          { question: 'hari Selasa', answer: 'かようび' },
+          { question: 'hari Rabu', answer: 'すいようび' },
+          { question: 'hari Kamis', answer: 'もくようび' },
+          { question: 'hari Jumat', answer: 'きんようび' },
+          { question: 'hari Sabtu', answer: 'どようび' },
+          { question: 'hari Minggu', answer: 'にちようび' },
+          { question: 'hari apa', answer: 'なんようび' },
+          { question: 'dari', answer: 'から' },
+          { question: 'sampai', answer: 'まで' },
+          { question: 'dan', answer: 'と' },
+          { question: 'berat ya', answer: 'ね' },
+          { question: 'nomor', answer: 'ばんごう' },
+          { question: 'nomor berapa', answer: 'なんばん' },
+          { question: 'di sana', answer: 'そこに' },
+          { question: 'New York', answer: 'ニューヨーク' },
+          { question: 'Beijing', answer: '北京' },
+          { question: 'Los Angeles', answer: 'ロサンゼルス' },
+          { question: 'London', answer: 'ロンドン' },
+          { question: 'pergi', answer: 'いきます (Ikimasu)' },
+          { question: 'datang', answer: 'きます (Kimasu)' },
+          { question: 'pulang', answer: 'かえります (Kaerimasu)' },
+          { question: 'sekolah', answer: 'がっこう (Gakkou)' },
+          { question: 'pasar swalayan', answer: 'スーパー (Suupaa)' },
+          { question: 'stasiun', answer: 'えき (Eki)' },
+      { question: 'dia laki-laki', answer: 'かれ (Kare)' },
+      { question: 'dia perempuan', answer: 'かのじょ (Kanojo)' },
+      { question: 'kapan', answer: 'いつ (Itsu)' },
+      { question: 'hari ulangtahun', answer: 'たんじょうび (Tanjoubi)' },
+      { question: 'ya betul', answer: 'はい、そうです (Hai, sou desu)' },
+      { question: 'terima kasih', answer: 'ありがとう (Arigatou)' },
+      { question: 'sama-sama', answer: 'どういたしまして (Dou itashimashite)' },
+      { question: 'bansen', answer: 'ばんせん (Bansen)' },
+      { question: 'yang berikutnya', answer: 'つぎの (Tsugi no)' },
+      { question: 'biasa', answer: 'ふつう (Futsuu)' },
+      { question: 'ekspres', answer: 'きゅうこう (Kyuukou)' },
+      { question: 'super ekspres', answer: 'しんかんせん (Shinkansen)' },
+      { question: 'hari', answer: 'にち (Nichi)' },
+      { question: 'berapa hari', answer: 'なんにち (Nannichi)' },
+      { question: 'tanggal 1', answer: 'ついたち (Tsuitachi)' },
+      { question: 'tanggal 2', answer: 'ふつか (Futsuka)' },
+      { question: 'tanggal 3', answer: 'みっか (Mikka)' },
+      { question: 'tanggal 4', answer: 'よっか (Yokka)' },
+      { question: 'tanggal 5', answer: 'いつか (Itsuka)' },
+      { question: 'tanggal 6', answer: 'むいか (Muika)' },
+      { question: 'tanggal 7', answer: 'なのか (Nanoka)' },
+      { question: 'tanggal 8', answer: 'ようか (Youka)' },
+      { question: 'tanggal 9', answer: 'ここのか (Kokonoka)' },
+      { question: 'tanggal 10', answer: 'とおか (Tooka)' },
+      { question: 'tanggal 14', answer: 'じゅうよっか (Juuyokka)' },
+      { question: 'tanggal 20', answer: 'はつか (Hatsuka)' },
+      { question: 'tanggal 24', answer: 'にじゅうよっか (Nijuyokka)' },
+      { question: 'tahun', answer: 'とし (Toshi)' },
+      { question: 'tahun berapa', answer: 'なんねん (Nannen)' },
+      { question: 'bulan', answer: 'つき (Tsuki)' },
+      { question: 'bulan apa', answer: 'なんがつ (Nangatsu)' },
+      { question: 'orang', answer: 'ひと (Hito)' },
+      { question: 'teman', answer: 'ともだち (Tomodachi)' },
+      { question: 'keluarga', answer: 'かぞく (Kazoku)' },
+      { question: 'sendirian', answer: 'ひとりで (Hitoride)' },
+      { question: 'minggu lalu', answer: 'せんしゅう (Senshuu)' },
+      { question: 'minggu ini', answer: 'こんしゅう (Konshuu)' },
+      { question: 'minggu depan', answer: 'らいしゅう (Raishuu)' },
+      { question: 'bulan lalu', answer: 'せんげつ (Sengetsu)' },
+      { question: 'bulan ini', answer: 'こんげつ (Kongetsu)' },
+      { question: 'bulan depan', answer: 'らいげつ (Raigetsu)' },
+      { question: 'tahun lalu', answer: 'きょねん (Kyonen)' },
+      { question: 'tahun ini', answer: 'ことし (Kotoshi)' },
+      { question: 'tahun depan', answer: 'らいねん (Rainen)' },
+      { question: 'pesawat terbang', answer: 'ひこうき (Hikouki)' },
+      { question: 'kapal laut', answer: 'ふね (Fune)' },
+      { question: 'kreta rel listrik', answer: 'でんしゃ (Densha)' },
+      { question: 'kreta bawah tanah', answer: 'ちかてつ (Chikatetsu)' },
+      { question: 'Shinkansen', answer: 'しんかんせん (Shinkansen)' },
+      { question: 'bus', answer: 'ばす (Basu)' },
+      { question: 'taksi', answer: 'たくしー (Takushii)' },
+      { question: 'sepeda', answer: 'じてんしゃ (Jitensha)' },
+      { question: 'dengan berjalan kaki', answer: 'あるいて (Aruite)' },
+          { question: 'makan', answer: 'たべます (Tabemasu)' },
+          { question: 'minum', answer: 'のみます (Nomimasu)' },
+          { question: 'menghisap', answer: 'すいます (Suimasu)' },
+          { question: 'melihat', answer: 'みます (Mimasu)' },
+          { question: 'mendengar', answer: 'ききます (Kikimasu)' },
+          { question: 'membaca', answer: 'よみます (Yomimasu)' },
+          { question: 'menulis', answer: 'かきます (Kakimasu)' },
+          { question: 'membeli', answer: 'かいます (Kaimasu)' },
+          { question: 'mengambil [foto]', answer: 'とります (Torimasu)' },
+          { question: 'melakukan', answer: 'します (Shimasu)' },
+          { question: 'bertemu', answer: 'あいます (Aimasu)' },
+          { question: 'nasi', answer: 'ごはん (Gohan)' },
+          { question: 'sarapan', answer: 'あさごはん (Asagohan)' },
+          { question: 'makan siang', answer: 'ひるごはん (Hirugohan)' },
+          { question: 'makan malam', answer: 'ばんごはん (Bangohan)' },
+          { question: 'roti', answer: 'パン (Pan)' },
+          { question: 'telur', answer: 'たまご (Tamago)' },
+          { question: 'daging', answer: 'にく (Niku)' },
+          { question: 'ikan', answer: 'さかな (Sakana)' },
+          { question: 'sayur', answer: 'やさい (Yasai)' },
+          { question: 'buah-buahan', answer: 'くだもの (Kudamono)' },
+          { question: 'air', answer: 'みず (Mizu)' },
+          { question: 'teh', answer: 'おちゃ (Ocha)' },
+          { question: 'susu', answer: 'ぎゅうにゅう (Gyūnyū)' },
+          { question: 'jus', answer: 'ジュース (Jūsu)' },
+          { question: 'bir', answer: 'ビール (Bīru)' },
+          { question: 'minuman keras', answer: 'アルコール (Arukooru)' },
+          { question: 'rokok', answer: 'たばこ (Tabako)' },
+          { question: 'surat', answer: 'てがみ (Tegami)' },
+          { question: 'laporan', answer: 'レポート (Repōto)' },
+          { question: 'foto', answer: 'しゃしん (Shashin)' },
+          { question: 'kaset video', answer: 'ビデオテープ (Bideo Tēpu)' },
+          { question: 'toko', answer: 'みせ (Mise)' },
+          { question: 'halaman', answer: 'にわ (Niwa)' },
+          { question: 'PR', answer: 'しゅくだい (Shukudai)' },
+          { question: 'ya', answer: 'ええ' },
+          { question: 'bagus ya', answer: 'いいですね' },
+          { question: 'mengerti', answer: 'わかります' },
+          { question: 'apa?', answer: 'なんですか？ (Nan desu ka?)' },
+          { question: 'ja mata', answer: 'じゃあまた' },
+          { question: 'tenis', answer: 'テニス (Tenisu)' },
+          { question: 'sepak bola', answer: 'サッカー (Sakkā)' },
+          { question: 'hanami', answer: '花見 (Hanami)' },
+          { question: 'apa', answer: '何 (Nani)' },
+          { question: 'bersama-sama', answer: '一緒に (Issho ni)' },
+          { question: 'sebentar', answer: 'ちょっと (Chotto)' },
+          { question: 'selalu', answer: 'いつも (Itsumo)' },
+          { question: 'kadang-kadang', answer: '時々 (Tokidoki)' }
+
+
+
+        ];
+
+// Acak pasangan pertanyaan dan jawaban
+const shuffledQuestionsAndAnswers = shuffle(questionsAndAnswers);
+
+function shuffle(array) {
+    let currentIndex = array.length,  randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function displayQuestion() {
+    questionElement.textContent = shuffledQuestionsAndAnswers[currentQuestionIndex].question;
+}
+
+function displayAnswer() {
+    const answer = shuffledQuestionsAndAnswers[currentQuestionIndex].answer;
+    const listItem = document.createElement('li');
+    listItem.textContent = (currentQuestionIndex + 1) + '. ' + answer; // Menambahkan nomor urutan
+    answerListElement.insertBefore(listItem, answerListElement.firstChild); // Memasukkan jawaban di atas yang sudah ada
+    setTimeout(function() {
+        listItem.classList.add('show'); // Menambahkan kelas untuk animasi
+    }, 0); // Menunggu proses rendering selesai sebelum menambahkan kelas animasi
+    if (marked && currentQuestionIndex === 0) { // Tandai jawaban pertama jika tombol "Tandai Soal" ditekan
+        listItem.classList.add('marked');
+    }
+}
+
+function showAnswer() {
+    displayAnswer();
+    currentQuestionIndex++;
+    if (currentQuestionIndex < shuffledQuestionsAndAnswers.length) {
+        displayQuestion();
+    } else {
+        showAnswerBtn.disabled = true;  // Menonaktifkan tombol "Lihat Jawaban" setelah semua jawaban ditampilkan
+    }
+}
+
+function markQuestion() {
+    marked = true;
+    displayAnswer();   // Tampilkan jawaban yang sesuai
+}
+
+// Tampilkan pertanyaan pertama saat halaman dimuat
+displayQuestion();
+</script>
+</body>
+</html>
